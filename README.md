@@ -35,11 +35,30 @@ IDs are tuples of `[agent: string, seq: number]`. Each peer is expected to choos
 
 ## Running the tests
 
+### TypeScript (Original)
+
 I use ts-node to run the code in this project. After `npm install` / `yarn` you can run files with:
 
 ```
 npx ts-node test.ts
 ```
+
+### Python (Port)
+
+This repository now includes a Python port of the CRDT implementations. To run the Python tests:
+
+```bash
+# Install development dependencies
+pip install -r requirements-dev.txt
+
+# Run tests
+pytest
+
+# Or with verbose output
+pytest -v
+```
+
+The Python implementation maintains the same algorithms and test coverage as the TypeScript version.
 
 ## Contribution policy
 

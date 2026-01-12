@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "reference-crdts"
+version = "0.1.0"
+description = "Reference implementations of CRDT algorithms in Python"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[tool.setuptools]
+packages = ["reference_crdts"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["*test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
