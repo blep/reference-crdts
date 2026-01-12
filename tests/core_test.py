@@ -1,7 +1,10 @@
 """Tests for reference CRDTs."""
 
 import pytest
-from reference_crdts.crdts import Doc, Item, Id, new_doc, get_array, integrate_yjs_mod, local_insert, merge_into, can_insert_now
+from reference_crdts.crdts import (
+    Doc, Item, Id, new_doc, get_array, integrate_yjs_mod, local_insert,
+    merge_into, can_insert_now, yjs_mod, yjs, automerge, sync9, fugue, fugue_max
+)
 
 
 def make_item(content, id_or_agent, origin_left, origin_right, am_seq, sync9_parent=None, sync9_insert_after=True):
@@ -17,40 +20,28 @@ def make_item(content, id_or_agent, origin_left, origin_right, am_seq, sync9_par
     )
 
 
-# Stub for YjsMod algorithm
-class YjsMod:
-    def integrate(self, doc: Doc, new_item: Item, idx_hint=None):
-        integrate_yjs_mod(doc, new_item, idx_hint or -1)
-
-    def local_insert(self, doc: Doc, agent: str, pos: int, content):
-        local_insert(doc, agent, pos, content, self)
-
-    def print_doc(self, doc: Doc):
-        pass
-
-
-yjs_mod = YjsMod()
-
-
-def test_smoke():
+@pytest.mark.parametrize("algorithm", [yjs_mod, yjs, automerge, sync9, fugue, fugue_max])
+def test_smoke(algorithm):
     doc = new_doc()
-    yjs_mod.integrate(doc, make_item('a', ('A', 0), None, None, 0))
-    yjs_mod.integrate(doc, make_item('b', ('A', 1), ('A', 0), None, 1))
+    algorithm.integrate(doc, make_item('a', ('A', 0), None, None, 0))
+    algorithm.integrate(doc, make_item('b', ('A', 1), ('A', 0), None, 1))
 
     assert get_array(doc) == ['a', 'b']
 
 
-def test_smoke_merge():
+@pytest.mark.parametrize("algorithm", [yjs_mod, yjs, automerge, sync9, fugue, fugue_max])
+def test_smoke_merge(algorithm):
     doc = new_doc()
-    yjs_mod.integrate(doc, make_item('a', ('A', 0), None, None, 0))
-    yjs_mod.integrate(doc, make_item('b', ('A', 1), ('A', 0), None, 1))
+    algorithm.integrate(doc, make_item('a', ('A', 0), None, None, 0))
+    algorithm.integrate(doc, make_item('b', ('A', 1), ('A', 0), None, 1))
 
     doc2 = new_doc()
-    merge_into(yjs_mod, doc2, doc)
+    merge_into(algorithm, doc2, doc)
     assert get_array(doc2) == ['a', 'b']
 
 
-def test_interleaving():
+@pytest.mark.parametrize("algorithm", [yjs_mod, yjs, automerge, sync9, fugue, fugue_max])
+def test_interleaving(algorithm):
     ops = [
         make_item('a', ('A', 0), None, None, 0),
         make_item('a', ('A', 1), ('A', 0), None, 1),
@@ -65,6 +56,44 @@ def test_interleaving():
     doc = new_doc()
     for op in ops:
         if can_insert_now(op, doc):
-            yjs_mod.integrate(doc, op)
+            algorithm.integrate(doc, op)
 
-    assert get_array(doc) == ['a', 'a', 'a', 'b', 'b', 'b']
+@pytest.mark.parametrize("algorithm", [yjs_mod, yjs, automerge, sync9, fugue, fugue_max])
+def test_interleaving_backward(algorithm):
+    if algorithm.ignore_tests and 'test_interleaving_backward' in algorithm.ignore_tests:
+        pytest.skip("Test ignored for this algorithm")
+    
+    ops = [
+        make_item('a', ('A', 0), None, None, 0),
+        make_item('a', ('A', 1), None, ('A', 0), 1),
+        make_item('a', ('A', 2), None, ('A', 1), 2),
+
+        make_item('b', ('B', 0), None, None, 0),
+        make_item('b', ('B', 1), None, ('B', 0), 1),
+        make_item('b', ('B', 2), None, ('B', 1), 2),
+    ]
+
+    # Simple integration in order
+    doc = new_doc()
+    for op in ops:
+        if can_insert_now(op, doc):
+            algorithm.integrate(doc, op)
+
+@pytest.mark.parametrize("algorithm", [yjs_mod, yjs, automerge, sync9, fugue, fugue_max])
+def test_concurrent_a_vs_b(algorithm):
+    a = make_item('a', 'A', None, None, 0)
+    b = make_item('b', 'B', None, None, 0)
+    
+    # Try integrating in both orders
+    doc1 = new_doc()
+    algorithm.integrate(doc1, a)
+    algorithm.integrate(doc1, b)
+    result1 = get_array(doc1)
+    
+    doc2 = new_doc()
+    algorithm.integrate(doc2, b)
+    algorithm.integrate(doc2, a)
+    result2 = get_array(doc2)
+    
+    # Both should give the same result
+    assert result1 == result2 == ['a', 'b']
