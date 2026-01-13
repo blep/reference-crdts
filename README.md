@@ -60,6 +60,23 @@ pytest -v
 
 The Python implementation maintains the same algorithms and test coverage as the TypeScript version.
 
+## Benchmarks
+
+The `bench.py` script runs performance benchmarks against real-world editing traces. It automatically downloads the required data files from the [josephg/editing-traces](https://github.com/josephg/editing-traces) repository if they are missing.
+
+### Run Benchmarks
+
+```bash
+python bench.py
+```
+
+This will:
+- Create a `crdt-benchmarks/` directory in the project root
+- Download `automerge-paper.json.gz` and `sveltecomponent.json.gz` if not present
+- Benchmark YjsMod, Automerge, and Sync9 algorithms against the traces
+
+The script handles gzipped files directly without extraction.
+
 ## Contribution policy
 
 Note: This code base was created for science and learning. It is not built to be a load bearing part of your infrastructure.

@@ -422,7 +422,30 @@ class Algorithm(Generic[T]):
 
 # Algorithm instances
 def print_doc_default(doc: Doc[T]) -> None:
-    pass
+    """Print the document structure."""
+    depth = {}
+    for item in doc.content:
+        if item.originLeft is None:
+            d = 0
+        else:
+            key = f"{item.originLeft[0]} {item.originLeft[1]} {item.insertAfter}"
+            d = depth.get(key, 0) + 1
+        key = f"{item.id[0]} {item.id[1]} {item.content is not None}"
+        depth[key] = d
+
+        content_str = str(item.content) if item.content is not None else '.'
+        if item.isDeleted:
+            content_str = f"~~{content_str}~~"
+        else:
+            content_str = f"{content_str}"  # No color for simplicity
+
+        info = f"{content_str} at [{item.id}] (par/left [{item.originLeft}])"
+        if item.originRight:
+            info += f" right [{item.originRight}]"
+        info += f" {item.insertAfter}"
+
+        indent = "| " * d
+        print(f"{indent}{info}")
 
 
 yjs_mod = Algorithm(
