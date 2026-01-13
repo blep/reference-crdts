@@ -1,5 +1,7 @@
 # Reference CRDTs
 
+> **🚀 Python Port Available**: This repository is a fork of Joseph Gentle's reference CRDT implementations, featuring a tool generated Python port in the `python_port` branch. Key files: [reference_crdts/crdts.py](reference_crdts/crdts.py) (core implementations) and [tests/core_test.py](tests/core_test.py) (comprehensive tests).
+
 This repository contains simple proof-of-concept reference implementations of yjs, automerge and sync9's list types - all implemented in the same codebase. The implementations are reference-correct. That is, the resulting document order in all cases is the same as it is in the "real" versions (from yjs, automerge and "loom" (sync9's implementation)).
 
 These reference implementation is (mostly) designed for readability and to show that the same codebase can handle all 3 implementations. But some complexity creeps in from overlaying all of the tricks needed for each approach. When code is only applicable to a single implementation, it is marked as such. (Eg maxSeq in document, or the alternate makeItem method for sync9).
@@ -62,12 +64,12 @@ The Python implementation maintains the same algorithms and test coverage as the
 
 ## Benchmarks
 
-The `bench.py` script runs performance benchmarks against real-world editing traces. It automatically downloads the required data files from the [josephg/editing-traces](https://github.com/josephg/editing-traces) repository if they are missing.
+The `scripts/bench.py` script runs performance benchmarks against real-world editing traces. It automatically downloads the required data files from the [josephg/editing-traces](https://github.com/josephg/editing-traces) repository if they are missing.
 
 ### Run Benchmarks
 
 ```bash
-python bench.py
+python scripts/bench.py
 ```
 
 This will:
@@ -76,6 +78,13 @@ This will:
 - Benchmark YjsMod, Automerge, and Sync9 algorithms against the traces
 
 The script handles gzipped files directly without extraction.
+
+## Additional Scripts
+
+- `scripts/trace.py`: Demonstrates CRDT operations and document state visualization.
+- `scripts/bench.py`: Performance benchmarking (see above).
+
+Run with: `python scripts/<script_name>.py`
 
 ## Contribution policy
 
