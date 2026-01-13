@@ -217,18 +217,20 @@ def integrate_rga_smol(doc: Doc[T], new_item: Item[T], idx_hint: int = -1) -> No
 
 def find_item_at_pos(doc: Doc[T], pos: int, stick_end: bool = False) -> int:
     i = 0
-    for i in range(len(doc.content)):
+    while i < len(doc.content):
         item = doc.content[i]
         if stick_end and pos == 0:
             return i
         elif item.isDeleted or item.content is None:
+            i += 1
             continue
         elif pos == 0:
             return i
         pos -= 1
+        i += 1
 
     if pos == 0:
-        return i + 1  # Since i is the last index in the loop
+        return i
     else:
         raise ValueError('past end of the document')
 
